@@ -4,9 +4,31 @@
 
 The [ABC-SMC-(D)RF](https://doi.org/10.1007/s11222-025-10748-x) library can be installed with
 
-```{r}
+```r
 devtools::install_github("dinhngockhanh/abcsmcrf")
 ```
+
+##  Default perturbation kernel
+
+By default, `smcrf()` uses an independent [Beaumont](https://doi.org/10.1111/j.1541-0420.2008.01180.x) kernel: each parameter is perturbed with a (truncated) normal whose variance is twice the empirical variance of particles resampled from the previous iteration. Omit `rperturb` and `dperturb` to use this kernel, and pass `parameter_bounds` to truncate parameters to their prior support. Parameters not listed in `parameter_bounds` are treated as unbounded.
+
+```r
+smcrf(
+    method = "smcrf-multi-param",
+    statistics_target = statistics_target,
+    model = model,
+    rprior = rprior,
+    dprior = dprior,
+    parameter_bounds = data.frame(
+        parameter = c("theta1", "theta2"),
+        min = c(-Inf, 0),
+        max = c(Inf, Inf)
+    ),
+    nParticles = rep(1000, 10)
+)
+```
+
+To use a custom kernel, supply both `rperturb` and `dperturb`. See `?make_beaumont_kernel` and `?smcrf`.
 
 ##  Vignettes
 

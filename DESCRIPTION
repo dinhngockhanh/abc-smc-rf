@@ -5,12 +5,13 @@ Date: 2024-07-10
 Title: Approximate Bayesian Computation sequential Monte Carlo via random forests
 Authors@R: c(
     person("Khanh", "Dinh", email = "knd2127@columbia.edu", role = c("aut", "cre")),
+    person("Cécile", "Liu", role = "aut"),
     person("Zijin", "Xiang", email = "zx2406@columbia.edu", role = "aut"),
     person("Zhihan", "Liu", email = "zl3213@columbia.edu", role = "aut"),
     person("Simon", "Tavaré", email = "st3193@columbia.edu", role = "aut")
     )
 Description: Parameter inference using random forests in the framework of Approximate Bayesian Computation sequential Monte Carlo.
-License: GPL (>= 2)
+License: MIT + file LICENSE
 Imports: 
     abcrf,
     crayon,
@@ -24,7 +25,8 @@ Imports:
     matrixStats,
     parallel,
     pbapply,
-    RColorBrewer
+    RColorBrewer,
+    truncnorm
 Suggests: 
     coala,
     deSolve,

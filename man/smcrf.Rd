@@ -12,16 +12,17 @@ smcrf(
   model,
   rprior,
   dprior,
-  rperturb,
-  dperturb,
+  rperturb = NULL,
+  dperturb = NULL,
   nParticles,
   final_sample = TRUE,
   model_redo_if_NA = FALSE,
   verbose = TRUE,
   parallel = FALSE,
-  save_model = TRUE,
+  save_model = FALSE,
   save_rds = FALSE,
   filename_rds = "ABCSMCDRF.rds",
+  parameter_bounds = NULL,
   ...
 )
 }
@@ -59,19 +60,22 @@ The \code{parameter_id} is either \code{"all"} or one of the parameter IDs.
 The output is a vector of prior probabilities corresponding to rows in \code{parameters},
 either for the parameter indicated by \code{parameter_id} or jointly for all parameters (if \code{parameter_id} = \code{"all"}).}
 
-\item{rperturb}{Function to generate perturbed particles.
+\item{rperturb}{Function to generate perturbed particles (\code{NULL} by default).
+If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} uses the
+independent Beaumont kernel from \code{\link{make_beaumont_kernel}}.
+If supplied, both \code{rperturb} and \code{dperturb} must be provided.
 The function must take three inputs: \code{parameters_unperturbed}, \code{parameters_previous_sampled}, and \code{iteration}.
 The dataframe \code{parameters_unperturbed} contains unperturbed parameter sets in each row.
 The dataframe \code{parameters_previous_sampled} contains parameter sets sampled from the previous iteration in each row.
 In both dataframes, the column names match parameter IDs.
 The integer \code{iteration} indicates the index for current iteration.
 The output is a dataframe where column names match parameter IDs,
-and each row contains one perturbed parameter set corresponding to each row in \code{parameters_unperturbed}.
-A popular choice for perturbation is the normal distribution centered at the unperturbed parameters,
-with standard deviation equal to twice the empirical standard deviation of the parameters sampled from the previous iteration,
-truncated to within the prior distribution.}
+and each row contains one perturbed parameter set corresponding to each row in \code{parameters_unperturbed}.}
 
-\item{dperturb}{Function to compute the perturbation density.
+\item{dperturb}{Function to compute the perturbation density (\code{NULL} by default).
+If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} uses the
+independent Beaumont kernel from \code{\link{make_beaumont_kernel}}.
+If supplied, both \code{rperturb} and \code{dperturb} must be provided.
 The function must take five inputs: \code{parameters}, \code{parameters_previous}, \code{parameters_previous_sampled}, \code{iteration}, and \code{parameter_id}.
 The dataframe \code{parameters} contains parameter sets in each row.
 The dataframe \code{parameters_previous} contains one parameter set from the previous iteration.
@@ -106,6 +110,12 @@ If \code{save_rds} = \code{TRUE}, the ABC-SMC-RF results will be saved in an rds
 \item{filename_rds}{A string (\code{"ABCSMCDRF.rds"} by default).
 If \code{save_rds} = \code{TRUE}, the output from ABC-SMC-(D)RF will be saved in a file with this name.}
 
+\item{parameter_bounds}{Optional dataframe with columns \code{parameter}, \code{min}, and \code{max}
+giving truncation intervals for the default Beaumont kernel.
+Ignored when custom \code{rperturb} and \code{dperturb} are supplied.
+Parameters not listed are treated as unbounded.
+See \code{\link{make_beaumont_kernel}}.}
+
 \item{...}{Additional arguments to be passed to \code{abcrf} or \code{drf}.}
 }
 \value{
@@ -119,4 +129,7 @@ in which case ABC-SMC-(D)RF will continue iterating from the last run in \code{s
 It implements the sequential Monte Carlo framework, where each iteration
 uses either ABC-RF (functions \code{regAbcrf} and \code{predict} in R package \code{abcrf})
 or ABC-DRF (functions \code{drf} and \code{predict} in R package \code{drf}) to update the posterior distribution(s).
+}
+\seealso{
+\code{\link{make_beaumont_kernel}}
 }

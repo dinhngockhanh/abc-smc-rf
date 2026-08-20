@@ -1,0 +1,24 @@
+citHeader("To cite abcsmcrf in publications use:")
+
+bibentry(
+    bibtype = "Article",
+    title = "Approximate Bayesian computation sequential Monte Carlo via random forests",
+    author = c(
+        person("Khanh N.", "Dinh"),
+        person("Cécile", "Liu"),
+        person("Zijin", "Xiang"),
+        person("Zhihan", "Liu"),
+        person("Simon", "Tavaré")
+    ),
+    journal = "Statistics and Computing",
+    year = "2025",
+    volume = "35",
+    number = "219",
+    doi = "10.1007/s11222-025-10748-x",
+    textVersion = paste(
+        "Dinh KN, Liu C, Xiang Z, Liu Z, Tavaré S (2025).",
+        "Approximate Bayesian computation sequential Monte Carlo via random forests.",
+        "Statistics and Computing 35, 219.",
+        "https://doi.org/10.1007/s11222-025-10748-x"
+    )
+)
