@@ -56,7 +56,8 @@
 #' @param parameter_bounds Optional dataframe with columns \code{parameter}, \code{min}, and \code{max}.
 #' If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} implements
 #' Beaumont et al.'s automatic perturbation kernels, which are Gaussian truncated to the intervals specified in \code{parameter_bounds}.
-#' If \code{parameter_bounds = NULL}, untruncated Gaussian perturbation kernels are used.
+#' If \code{parameter_bounds} is \code{NULL}, untruncated Gaussian perturbation kernels are used.
+#' If \code{parameter_bounds} is not \code{NULL}, bounds for all parameters must be specified (unbounded parameters can be specified with \code{min = -Inf} or \code{max = Inf}).
 #' @param nParticles A vector of particle counts.
 #' Each entry indicates the number of simulations (e.g. particles) in the corresponding iteration.
 #' @param final_sample A logic variable (\code{TRUE} by default).
