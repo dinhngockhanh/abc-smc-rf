@@ -26,7 +26,7 @@
 #' parameters_truth <- data.frame(
 #'     theta = 2 # this will plot a vertical line
 #' )
-#' if you prefer to have a histogram of true posterior
+#' # if you prefer to have a histogram of true posterior
 #' parameters_truth <- data.frame(
 #'     theta = rnorm(10000, mean = 2, 1)
 #' )
@@ -203,10 +203,16 @@ plot_smcrf_marginal <- function(smcrf_results,
 #' If provided, the x-axis will be scaled by them.
 #' @param plot_statistics A logic variable (plot_statistics = FALSE by default).
 #' If plot_statistics = TRUE, the marginal distributions in each iteration for corresponding statistics will also be output.
+#' @param plot_truth_hist A logic variable (TRUE by default).
+#' If plot_truth_hist = TRUE and \code{parameters_truth} contains more than one row,
+#' the true posterior is drawn as a histogram; otherwise it is drawn as a density or line.
 #' @param plot_hist A logic variable (plot_hist = FALSE by default).
 #' If plot_hist = TRUE, marginal distributions will be plotted in histograms.
 #' @param plot_hist_point A logic variable (plot_hist_point = FALSE by default).
 #' If plot_hist_point = TRUE, marginal distributions will be plotted in histograms with points in the middle.
+#' @param breaks Optional numeric vector of histogram break points, passed to \code{geom_histogram} and \code{hist}.
+#' If \code{NULL}, ggplot2 / \code{hist} defaults are used.
+#' @param alpha_truth Transparency for the true posterior distribution. Default is 0.8.
 #' @param alpha The numeric number to modify transparency. Default is 0.3.
 #' @param plot_prior A logic variable (plot_prior = FALSE by default)
 #' If plot_prior = TRUE, the prior distribution will be plotted out.

@@ -19,7 +19,7 @@ smcrf(
   model_redo_if_NA = FALSE,
   verbose = TRUE,
   parallel = FALSE,
-  save_model = TRUE,
+  save_model = FALSE,
   save_rds = FALSE,
   filename_rds = "ABCSMCDRF.rds",
   parameter_bounds = NULL,
