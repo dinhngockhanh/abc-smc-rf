@@ -102,6 +102,7 @@ smcrf <- function(method = "smcrf-single-param",
     suppressPackageStartupMessages(library(matrixStats))
     suppressPackageStartupMessages(library(Hmisc))
     suppressPackageStartupMessages(library(crayon))
+    suppressPackageStartupMessages(library(truncnorm))
     if (method == "smcrf-multi-param" & !is.null(statistics_selection)) stop("statistics_selection is only available for method 'smcrf-single-param'")
     if (method == "smcrf-single-param") {
         return(smcrf_single_param(
