@@ -75,7 +75,6 @@
 #' @param filename_rds A string (\code{"ABCSMCDRF.rds"} by default).
 #' If \code{save_rds} = \code{TRUE}, the output from ABC-SMC-(D)RF will be saved in a file with this name.
 #' @param ... Additional arguments to be passed to \code{abcrf} or \code{drf}.
-#' @seealso \code{\link{make_beaumont_kernel}}
 #' @return An object \code{smcrf_results} containing the results of the inference.
 #' If the posterior distributions have not converged to a satisfactory level,
 #' the user may continue with \code{smcrf(smcrf_results = smcrf_results, ...)},

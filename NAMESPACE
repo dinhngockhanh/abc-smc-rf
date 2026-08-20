@@ -3,7 +3,6 @@
 export(abc_mcmc)
 export(abc_rejection)
 export(abc_smc)
-export(make_beaumont_kernel)
 export(plot_compare_joint)
 export(plot_compare_marginal)
 export(plot_compare_qqplot)
