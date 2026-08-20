@@ -1,6 +1,5 @@
 library(abcsmcrf)
 library(invgamma)
-library(truncnorm)
 set.seed(1)
 # ===================================Function for plotting extrame cases
 plot_hierarchical_extreme <- function(drf_results,
@@ -169,34 +168,12 @@ rprior <- function(Nparameters) {
     theta1 <- rnorm(Nparameters, 0, sqrt(theta2))
     return(data.frame(theta1 = theta1, theta2 = theta2))
 }
-# =============================================Perturbation distribution
-dperturb <- function(parameters, parameters_previous, parameters_previous_sampled, iteration, parameter_id = "all") {
-    Beaumont_variances <- 2 * pmax(sapply(parameters_previous_sampled, var), 1e-10)
-    probs <- rep(1, nrow(parameters))
-    if (parameter_id %in% c("all", "theta1")) {
-        probs <- probs * dnorm(parameters[["theta1"]], mean = parameters_previous[["theta1"]], sd = sqrt(Beaumont_variances[["theta1"]]))
-    }
-    if (parameter_id %in% c("all", "theta2")) {
-        probs <- probs * dtruncnorm(parameters[["theta2"]], a = 0, b = Inf, mean = parameters_previous[["theta2"]], sd = sqrt(Beaumont_variances[["theta2"]]))
-    }
-    return(probs)
-}
-rperturb <- function(parameters_unperturbed, parameters_previous_sampled, iteration) {
-    Beaumont_variances <- 2 * pmax(sapply(parameters_previous_sampled, var), 1e-10)
-    parameters_perturbed <- parameters_unperturbed
-    parameters_perturbed[["theta1"]] <- rnorm(
-        n = nrow(parameters_perturbed),
-        mean = parameters_perturbed[["theta1"]],
-        sd = sqrt(Beaumont_variances[["theta1"]])
-    )
-    parameters_perturbed[["theta2"]] <- rtruncnorm(
-        n = nrow(parameters_perturbed),
-        a = 0, b = Inf,
-        mean = parameters_perturbed[["theta2"]],
-        sd = sqrt(Beaumont_variances[["theta2"]])
-    )
-    return(parameters_perturbed)
-}
+# ======================Perturbation bounds (default Beaumont kernel)
+parameter_bounds <- data.frame(
+    parameter = c("theta1", "theta2"),
+    min = c(-Inf, 0),
+    max = c(Inf, Inf)
+)
 # ====================================Labels for parameters in the plots
 parameters_labels <- data.frame(
     parameter = c("theta1", "theta2"),
@@ -231,8 +208,7 @@ smcdrf_results <- smcrf(
     model = model,
     rprior = rprior,
     dprior = dprior,
-    rperturb = rperturb,
-    dperturb = dperturb,
+    parameter_bounds = parameter_bounds,
     nParticles = rep(20000, 20),
     parallel = TRUE
 )

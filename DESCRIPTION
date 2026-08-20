@@ -24,7 +24,8 @@ Imports:
     matrixStats,
     parallel,
     pbapply,
-    RColorBrewer
+    RColorBrewer,
+    truncnorm
 Suggests: 
     coala,
     deSolve,
