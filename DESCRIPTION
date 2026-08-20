@@ -13,34 +13,23 @@ Authors@R: c(
 Description: Parameter inference using random forests in the framework of Approximate Bayesian Computation sequential Monte Carlo.
 License: MIT + file LICENSE
 Imports: 
-    abcrf,
-    crayon,
     data.table,
     dplyr,
-    drf,
     EasyABC,
     ggplot2,
-    Hmisc,
     MASS,
-    matrixStats,
     parallel,
     pbapply,
-    RColorBrewer,
-    truncnorm
+    RColorBrewer
 Suggests: 
     coala,
     deSolve,
     invgamma,
-    knitr,
     LaplacesDemon,
-    Pareto,
     patchwork,
     reshape2,
-    rmarkdown,
     sensitivity,
-    tidyverse,
-    tseries,
-    weights
+    truncnorm
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.2
+Config/roxygen2/version: 8.0.0
