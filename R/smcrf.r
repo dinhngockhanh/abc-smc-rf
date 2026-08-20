@@ -403,6 +403,7 @@ smcrf_multi_param <- function(statistics_target,
                               dprior,
                               rperturb,
                               dperturb,
+                              parameter_bounds,
                               nParticles,
                               final_sample,
                               model_redo_if_NA,
@@ -488,15 +489,24 @@ smcrf_multi_param <- function(statistics_target,
                 #   Sample from the previous posterior distribution
                 parameters_previous <- parameters
                 weights_previous <- DRF_weights
-                parameter_replace <- parameters[sample(nrow(parameters), size = length(invalid_indices), prob = DRF_weights[, 1], replace = T), ]
+                parameter_replace <- parameters[sample(nrow(parameters), size = length(invalid_indices), prob = DRF_weights[, 1], replace = T), , drop = FALSE]
                 parameters_unperturbed[invalid_indices, ] <- parameter_replace
                 #   Perturb parameters
                 if (iteration < (nIterations + 1)) {
-                    parameter_replace <- rperturb(
-                        parameters_unperturbed = parameter_replace,
-                        parameters_previous_sampled = parameters_previous_sampled,
-                        iteration = iteration
-                    )
+                    if (!is.null(rperturb) & !is.null(dperturb)) {
+                        parameter_replace <- rperturb(
+                            parameters_unperturbed = parameter_replace,
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            iteration = iteration
+                        )
+                    } else {
+                        parameter_replace <- rperturb_Beaumont(
+                            parameters_unperturbed = parameter_replace,
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            parameter_bounds = parameter_bounds,
+                            iteration = iteration
+                        )
+                    }
                 }
                 parameters_next[invalid_indices, ] <- parameter_replace
             }
@@ -552,14 +562,26 @@ smcrf_multi_param <- function(statistics_target,
             #   Compute denominators for weight recalibration
             weight_modifiers_denominator <- rep(0, nrow(parameters))
             for (i in 1:nrow(parameters_previous)) {
-                weight_modifiers_denominator_i <- rep(weights_previous[i, 1], nrow(parameters)) *
-                    dperturb(
-                        parameters = parameters,
-                        parameters_previous = parameters_previous[i, , drop = FALSE],
-                        parameters_previous_sampled = parameters_previous_sampled,
-                        iteration = iteration,
-                        parameter_id = "all"
-                    )
+                if (!is.null(rperturb) & !is.null(dperturb)) {
+                    weight_modifiers_denominator_i <- rep(weights_previous[i, 1], nrow(parameters)) *
+                        dperturb(
+                            parameters = parameters,
+                            parameters_previous = parameters_previous[i, , drop = FALSE],
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            iteration = iteration,
+                            parameter_id = "all"
+                        )
+                } else {
+                    weight_modifiers_denominator_i <- rep(weights_previous[i, 1], nrow(parameters)) *
+                        dperturb_Beaumont(
+                            parameters = parameters,
+                            parameters_previous = parameters_previous[i, , drop = FALSE],
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            parameter_bounds = parameter_bounds,
+                            iteration = iteration,
+                            parameter_id = "all"
+                        )
+                }
                 weight_modifiers_denominator <- weight_modifiers_denominator + weight_modifiers_denominator_i
             }
             #   Modify weights for new particles
