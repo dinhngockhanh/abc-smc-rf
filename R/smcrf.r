@@ -626,7 +626,7 @@ dperturb_Beaumont <- function(parameters,
                               parameter_id = "all") {
     Beaumont_variances <- 2 * pmax(sapply(parameters_previous_sampled, var), .Machine$double.eps)
     probs <- rep(1, nrow(parameters))
-    for (parameter_id_tmp in colnames(parameters_unperturbed)) {
+    for (parameter_id_tmp in colnames(parameters)) {
         if (parameter_id %in% c("all", parameter_id_tmp)) {
             if (!is.null(parameter_bounds)) {
                 probs <- probs * dtruncnorm(
