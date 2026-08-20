@@ -32,10 +32,9 @@
 #' The output is a vector of prior probabilities corresponding to rows in \code{parameters},
 #' either for the parameter indicated by \code{parameter_id} or jointly for all parameters (if \code{parameter_id} = \code{"all"}).
 #' @param rperturb Function to generate perturbed particles (\code{NULL} by default).
-#' If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} uses the
-#' independent Beaumont kernel from \code{\link{make_beaumont_kernel}}.
-#' If supplied, both \code{rperturb} and \code{dperturb} must be provided.
-#' The function must take three inputs: \code{parameters_unperturbed}, \code{parameters_previous_sampled}, and \code{iteration}.
+#' If \code{rperturb} or \code{dperturb} is \code{NULL}, \code{\link{smcrf}}
+#' implements Beaumont et al.'s automatic perturbation kernels.
+#' If not \code{NULL}, \code{rperturb} must take three inputs: \code{parameters_unperturbed}, \code{parameters_previous_sampled}, and \code{iteration}.
 #' The dataframe \code{parameters_unperturbed} contains unperturbed parameter sets in each row.
 #' The dataframe \code{parameters_previous_sampled} contains parameter sets sampled from the previous iteration in each row.
 #' In both dataframes, the column names match parameter IDs.
@@ -43,10 +42,9 @@
 #' The output is a dataframe where column names match parameter IDs,
 #' and each row contains one perturbed parameter set corresponding to each row in \code{parameters_unperturbed}.
 #' @param dperturb Function to compute the perturbation density (\code{NULL} by default).
-#' If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} uses the
-#' independent Beaumont kernel from \code{\link{make_beaumont_kernel}}.
-#' If supplied, both \code{rperturb} and \code{dperturb} must be provided.
-#' The function must take five inputs: \code{parameters}, \code{parameters_previous}, \code{parameters_previous_sampled}, \code{iteration}, and \code{parameter_id}.
+#' If \code{rperturb} or \code{dperturb} is \code{NULL}, \code{\link{smcrf}}
+#' implements Beaumont et al.'s automatic perturbation kernels.
+#' If not \code{NULL}, \code{dperturb} must take five inputs: \code{parameters}, \code{parameters_previous}, \code{parameters_previous_sampled}, \code{iteration}, and \code{parameter_id}.
 #' The dataframe \code{parameters} contains parameter sets in each row.
 #' The dataframe \code{parameters_previous} contains one parameter set from the previous iteration.
 #' The dataframe \code{parameters_previous_sampled} contains parameter sets sampled from the previous iteration in each row.
@@ -55,6 +53,10 @@
 #' The \code{parameter_id} is either \code{"all"} or one of the parameter IDs.
 #' The output is a vector of perturbation probabilities from \code{parameters_previous} to rows in \code{parameters},
 #' either for the parameter indicated by \code{parameter_id} or jointly for all parameters (if \code{parameter_id} = \code{"all"}).
+#' @param parameter_bounds Optional dataframe with columns \code{parameter}, \code{min}, and \code{max}.
+#' If \code{rperturb} and \code{dperturb} are both \code{NULL}, \code{\link{smcrf}} implements
+#' Beaumont et al.'s automatic perturbation kernels, which are Gaussian truncated to the intervals specified in \code{parameter_bounds}.
+#' If \code{parameter_bounds = NULL}, untruncated Gaussian perturbation kernels are used.
 #' @param nParticles A vector of particle counts.
 #' Each entry indicates the number of simulations (e.g. particles) in the corresponding iteration.
 #' @param final_sample A logic variable (\code{TRUE} by default).
@@ -71,11 +73,6 @@
 #' If \code{save_rds} = \code{TRUE}, the ABC-SMC-RF results will be saved in an rds file.
 #' @param filename_rds A string (\code{"ABCSMCDRF.rds"} by default).
 #' If \code{save_rds} = \code{TRUE}, the output from ABC-SMC-(D)RF will be saved in a file with this name.
-#' @param parameter_bounds Optional dataframe with columns \code{parameter}, \code{min}, and \code{max}
-#' giving truncation intervals for the default Beaumont kernel.
-#' Ignored when custom \code{rperturb} and \code{dperturb} are supplied.
-#' Parameters not listed are treated as unbounded.
-#' See \code{\link{make_beaumont_kernel}}.
 #' @param ... Additional arguments to be passed to \code{abcrf} or \code{drf}.
 #' @seealso \code{\link{make_beaumont_kernel}}
 #' @return An object \code{smcrf_results} containing the results of the inference.
@@ -92,6 +89,7 @@ smcrf <- function(method = "smcrf-single-param",
                   dprior,
                   rperturb = NULL,
                   dperturb = NULL,
+                  parameter_bounds = NULL,
                   nParticles,
                   final_sample = TRUE,
                   model_redo_if_NA = FALSE,
@@ -100,18 +98,10 @@ smcrf <- function(method = "smcrf-single-param",
                   save_model = FALSE,
                   save_rds = FALSE,
                   filename_rds = "ABCSMCDRF.rds",
-                  parameter_bounds = NULL,
                   ...) {
     suppressPackageStartupMessages(library(matrixStats))
     suppressPackageStartupMessages(library(Hmisc))
     suppressPackageStartupMessages(library(crayon))
-    kernel <- resolve_perturbation(
-        rperturb = rperturb,
-        dperturb = dperturb,
-        parameter_bounds = parameter_bounds
-    )
-    rperturb <- kernel$rperturb
-    dperturb <- kernel$dperturb
     if (method == "smcrf-multi-param" & !is.null(statistics_selection)) stop("statistics_selection is only available for method 'smcrf-single-param'")
     if (method == "smcrf-single-param") {
         return(smcrf_single_param(
@@ -122,6 +112,7 @@ smcrf <- function(method = "smcrf-single-param",
             dprior = dprior,
             rperturb = rperturb,
             dperturb = dperturb,
+            parameter_bounds = parameter_bounds,
             nParticles = nParticles,
             final_sample = final_sample,
             model_redo_if_NA = model_redo_if_NA,
@@ -142,6 +133,7 @@ smcrf <- function(method = "smcrf-single-param",
             dprior = dprior,
             rperturb = rperturb,
             dperturb = dperturb,
+            parameter_bounds = parameter_bounds,
             nParticles = nParticles,
             final_sample = final_sample,
             model_redo_if_NA = model_redo_if_NA,
@@ -165,6 +157,7 @@ smcrf_single_param <- function(statistics_target,
                                dprior,
                                rperturb,
                                dperturb,
+                               parameter_bounds,
                                nParticles,
                                final_sample,
                                model_redo_if_NA,
@@ -261,11 +254,20 @@ smcrf_single_param <- function(statistics_target,
                 parameters_unperturbed[invalid_indices, ] <- parameter_replace
                 #   Perturb parameters
                 if (iteration < (nIterations + 1)) {
-                    parameter_replace <- rperturb(
-                        parameters_unperturbed = parameter_replace,
-                        parameters_previous_sampled = parameters_previous_sampled,
-                        iteration = iteration
-                    )
+                    if (!is.null(rperturb) & !is.null(dperturb)) {
+                        parameter_replace <- rperturb(
+                            parameters_unperturbed = parameter_replace,
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            iteration = iteration
+                        )
+                    } else {
+                        parameter_replace <- rperturb_Beaumont(
+                            parameters_unperturbed = parameter_replace,
+                            parameters_previous_sampled = parameters_previous_sampled,
+                            parameter_bounds = parameter_bounds,
+                            iteration = iteration
+                        )
+                    }
                 }
                 parameters_next[invalid_indices, ] <- parameter_replace
             }
@@ -343,14 +345,26 @@ smcrf_single_param <- function(statistics_target,
                 #   Compute denominators for weight recalibration
                 weight_modifiers_denominator <- rep(0, nrow(parameters))
                 for (i in 1:nrow(parameters_previous)) {
-                    weight_modifiers_denominator_i <- rep(weights_previous[i, parameter_id], nrow(parameters)) *
-                        dperturb(
-                            parameters = parameters,
-                            parameters_previous = parameters_previous[i, , drop = FALSE],
-                            parameters_previous_sampled = parameters_previous_sampled,
-                            iteration = iteration,
-                            parameter_id = parameter_id
-                        )
+                    if (!is.null(rperturb) & !is.null(dperturb)) {
+                        weight_modifiers_denominator_i <- rep(weights_previous[i, parameter_id], nrow(parameters)) *
+                            dperturb(
+                                parameters = parameters,
+                                parameters_previous = parameters_previous[i, , drop = FALSE],
+                                parameters_previous_sampled = parameters_previous_sampled,
+                                iteration = iteration,
+                                parameter_id = parameter_id
+                            )
+                    } else {
+                        weight_modifiers_denominator_i <- rep(weights_previous[i, parameter_id], nrow(parameters)) *
+                            dperturb_Beaumont(
+                                parameters = parameters,
+                                parameters_previous = parameters_previous[i, , drop = FALSE],
+                                parameters_previous_sampled = parameters_previous_sampled,
+                                parameter_bounds = parameter_bounds,
+                                iteration = iteration,
+                                parameter_id = parameter_id
+                            )
+                    }
                     weight_modifiers_denominator <- weight_modifiers_denominator + weight_modifiers_denominator_i
                 }
                 #   Modify weights for new particles
@@ -575,4 +589,59 @@ smcrf_multi_param <- function(statistics_target,
     }
     if (!verbose) cat("\n")
     return(SMCDRF)
+}
+
+rperturb_Beaumont <- function(parameters_unperturbed,
+                              parameters_previous_sampled,
+                              parameter_bounds,
+                              iteration) {
+    Beaumont_variances <- 2 * pmax(sapply(parameters_previous_sampled, var), .Machine$double.eps)
+    parameters_perturbed <- parameters_unperturbed
+    for (parameter_id in colnames(parameters_unperturbed)) {
+        if (!is.null(parameter_bounds)) {
+            parameters_perturbed[[parameter_id]] <- rtruncnorm(
+                n = nrow(parameters_perturbed),
+                a = parameter_bounds[parameter_bounds$parameter == parameter_id, "min"],
+                b = parameter_bounds[parameter_bounds$parameter == parameter_id, "max"],
+                mean = parameters_perturbed[[parameter_id]],
+                sd = sqrt(Beaumont_variances[[parameter_id]])
+            )
+        } else {
+            parameters_perturbed[[parameter_id]] <- rnorm(
+                n = nrow(parameters_perturbed),
+                mean = parameters_perturbed[[parameter_id]],
+                sd = sqrt(Beaumont_variances[[parameter_id]])
+            )
+        }
+    }
+    return(parameters_perturbed)
+}
+
+dperturb_Beaumont <- function(parameters,
+                              parameters_previous, parameters_previous_sampled,
+                              parameter_bounds,
+                              iteration,
+                              parameter_id = "all") {
+    Beaumont_variances <- 2 * pmax(sapply(parameters_previous_sampled, var), .Machine$double.eps)
+    probs <- rep(1, nrow(parameters))
+    for (parameter_id_tmp in colnames(parameters_unperturbed)) {
+        if (parameter_id %in% c("all", parameter_id_tmp)) {
+            if (!is.null(parameter_bounds)) {
+                probs <- probs * dtruncnorm(
+                    parameters[[parameter_id_tmp]],
+                    a = parameter_bounds[parameter_bounds$parameter == parameter_id_tmp, "min"],
+                    b = parameter_bounds[parameter_bounds$parameter == parameter_id_tmp, "max"],
+                    mean = parameters_previous[[parameter_id_tmp]],
+                    sd = sqrt(Beaumont_variances[[parameter_id_tmp]])
+                )
+            } else {
+                probs <- probs * dnorm(
+                    parameters[[parameter_id_tmp]],
+                    mean = parameters_previous[[parameter_id_tmp]],
+                    sd = sqrt(Beaumont_variances[[parameter_id_tmp]])
+                )
+            }
+        }
+    }
+    return(probs)
 }
